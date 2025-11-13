@@ -1,5 +1,6 @@
 package com.bookfair.stall.service;
 
+import com.bookfair.reservation.entity.Reservation;
 import com.bookfair.stall.dto.StallRequest;
 import com.bookfair.stall.dto.StallResponse;
 import com.bookfair.stall.entity.Stall;
@@ -10,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -20,22 +23,26 @@ public class StallService {
 
     private final StallRepository stallRepository;
 
+    @Transactional(readOnly = true)
     public List<StallResponse> getStalls(boolean availableOnly, StallSize sizeFilter) {
-        List<Stall> stalls;
-        if (availableOnly && sizeFilter != null) {
-            stalls = stallRepository.findBySizeAndReservedFalse(sizeFilter);
-        } else if (availableOnly) {
-            stalls = stallRepository.findByReservedFalse();
-        } else {
-            stalls = stallRepository.findAll();
-            if (sizeFilter != null) {
-                stalls = stalls.stream()
-                        .filter(stall -> stall.getSize() == sizeFilter)
-                        .collect(Collectors.toList());
-            }
+        List<Stall> stalls = stallRepository.findAllWithReservations();
+
+        if (availableOnly) {
+            stalls = stalls.stream()
+                    .filter(stall -> !stall.isReserved())
+                    .collect(Collectors.toList());
         }
 
-        return stalls.stream().map(this::toResponse).toList();
+        if (sizeFilter != null) {
+            StallSize filter = sizeFilter;
+            stalls = stalls.stream()
+                    .filter(stall -> stall.getSize() == filter)
+                    .collect(Collectors.toList());
+        }
+
+        return stalls.stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional
@@ -66,12 +73,22 @@ public class StallService {
     }
 
     private StallResponse toResponse(Stall stall) {
+        Optional<String> reservedBy = stall.getReservations().stream()
+                .sorted(Comparator.comparing(Reservation::getReservedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .map(reservation -> reservation.getUser() != null ? reservation.getUser().getEmail() : null)
+                .filter(email -> email != null && !email.isBlank())
+                .findFirst();
+
+        String status = stall.isReserved() ? "BOOKED" : "AVAILABLE";
+
         return StallResponse.builder()
                 .id(stall.getId())
                 .code(stall.getCode())
                 .size(stall.getSize())
                 .description(stall.getDescription())
                 .reserved(stall.isReserved())
+                .status(status)
+                .reservedBy(reservedBy.orElse(null))
                 .build();
     }
 }

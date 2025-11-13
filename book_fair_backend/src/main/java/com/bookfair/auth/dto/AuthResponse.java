@@ -15,5 +15,8 @@ public class AuthResponse {
 
     @Schema(description = "Token expiry timestamp")
     LocalDateTime expiresAt;
+
+    @Schema(description = "Authenticated user profile")
+    UserProfileResponse user;
 }
 

@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [stalls, setStalls] = useState([]);
-  const [sizeFilter, setSizeFilter] = useState("ALL");
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [genres, setGenres] = useState([]);
   const [warn, setWarn] = useState("");
@@ -48,16 +47,18 @@ export default function Dashboard() {
       return;
     }
     try {
-      const { data } = await reserveStalls({ stallIds: Array.from(selectedIds), genres });
-      setInfo(`Reserved ${data.reserved.length} stall(s) successfully.`);
+      const { data } = await reserveStalls({ stallIds: Array.from(selectedIds).map(Number) });
+      const count = data.totalReservedStalls ?? data.stalls?.length ?? Array.from(selectedIds).length;
+      setInfo(`Reservation confirmed. ${count} stall(s) reserved. Confirmation: ${data.confirmationCode}`);
       // refresh map
       const { data: fresh } = await fetchStalls();
       setStalls(fresh);
       setSelectedIds(new Set());
       // Optionally navigate to reserved page
       // nav("/reserved");
-    } catch {
-      setWarn("Reservation failed.");
+    } catch (err) {
+      const message = err?.response?.data?.message || "Reservation failed.";
+      setWarn(message);
     }
   };
 

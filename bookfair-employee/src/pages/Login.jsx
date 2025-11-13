@@ -22,8 +22,8 @@ export default function Login() {
       login(data.token, data.user);
       nav("/");
     } catch (err) {
-      console.log(err);
-      setErr("Invalid credentials");
+      const message = err?.response?.data?.message || "Invalid credentials";
+      setErr(message);
     } finally {
       setLoading(false);
     }

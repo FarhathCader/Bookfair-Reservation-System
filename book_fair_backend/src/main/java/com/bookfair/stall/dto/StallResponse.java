@@ -20,5 +20,11 @@ public class StallResponse {
     String description;
 
     boolean reserved;
+
+    @Schema(example = "AVAILABLE", description = "Current reservation status")
+    String status;
+
+    @Schema(example = "vendor@example.com", description = "Email of the vendor who reserved the stall, if any")
+    String reservedBy;
 }
 

@@ -106,6 +106,7 @@ public class UserService {
         return AuthResponse.builder()
                 .token(token)
                 .expiresAt(jwtService.extractExpiration(token))
+                .user(buildProfile(user))
                 .build();
     }
 }

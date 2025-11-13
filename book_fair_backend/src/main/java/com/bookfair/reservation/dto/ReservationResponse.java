@@ -25,5 +25,11 @@ public class ReservationResponse {
     List<String> stalls;
 
     int totalReservedStalls;
+
+    @Schema(example = "vendor@example.com")
+    String vendorEmail;
+
+    @Schema(example = "The Book Company")
+    String vendorBusinessName;
 }
 

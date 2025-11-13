@@ -1,37 +1,61 @@
-import React from "react";
-import { useEffect, useState } from "react";
-import { fetchStalls } from "../api/stalls";
-import { Paper, Typography, Divider } from "@mui/material";
-import { useAuth } from "../context/AuthContext";
+import React, { useEffect, useState } from "react";
+import { Paper, Typography, Divider, Chip, Stack } from "@mui/material";
+import { getAllReservations } from "../api/reservations";
 
 export default function Reserved() {
-  const [stalls, setStalls] = useState([]);
-  const { user } = useAuth();
+  const [reservations, setReservations] = useState([]);
+  const [error, setError] = useState("");
 
-  useEffect(()=> {
-    (async ()=> {
-      const { data } = await fetchStalls();
-      setStalls(data.filter(s=>s.status==="BOOKED" && s.reservedBy===user?.email));
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await getAllReservations();
+        setReservations(data);
+      } catch (err) {
+        setError(err?.response?.data?.message || "Unable to load reservations");
+      }
     })();
-  }, [user]);
+  }, []);
 
   return (
-    <Paper className="p-4">
-      <Typography variant="h6" className="font-bold">Reserved Stalls</Typography>
-      <Divider className="my-3"/>
-      {stalls.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">Nothing booked yet.</Typography>
+    <Paper className="p-4 space-y-4">
+      <Typography variant="h6" className="font-bold">
+        All Reservations
+      </Typography>
+      <Divider />
+      {error && (
+        <Typography variant="body2" color="error">
+          {error}
+        </Typography>
+      )}
+      {reservations.length === 0 && !error ? (
+        <Typography variant="body2" color="text.secondary">
+          No reservations have been created yet.
+        </Typography>
       ) : (
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {stalls.map(s=>(
-            <div key={s.id} className="border rounded-lg p-3">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">{s.code}</span>
-                <span className="badge bg-red-500 text-white">Booked</span>
+        <div className="space-y-3">
+          {reservations.map((reservation) => (
+            <Paper key={reservation.id} variant="outlined" className="p-3 space-y-2">
+              <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", md: "center" }} spacing={1}>
+                <Typography variant="subtitle1" className="font-semibold">
+                  {reservation.confirmationCode}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {new Date(reservation.reservedAt).toLocaleString()}
+                </Typography>
+              </Stack>
+              <Typography variant="body2" color="text.secondary">
+                Total stalls: {reservation.totalReservedStalls}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Vendor: {reservation.vendorBusinessName} ({reservation.vendorEmail})
+              </Typography>
+              <div className="flex flex-wrap gap-2">
+                {reservation.stalls?.map((code) => (
+                  <Chip key={code} label={code} color="secondary" variant="outlined" />
+                ))}
               </div>
-              <div className="text-xs text-gray-600 mt-1">Size: {s.size}</div>
-              <div className="text-xs text-gray-600">Reserved by: {s.reservedBy}</div>
-            </div>
+            </Paper>
           ))}
         </div>
       )}

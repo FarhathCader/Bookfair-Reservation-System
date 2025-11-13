@@ -6,7 +6,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { signupEmployee } from "../api/auth";
 
 export default function Signup() {
-  const [name, setName] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useAuth();
@@ -18,11 +19,12 @@ export default function Signup() {
     e.preventDefault();
     setLoading(true); setErr("");
     try {
-      const { data } = await signupEmployee({ name, email, password });
+      const { data } = await signupEmployee({ businessName, contactNumber, email, password });
       login(data.token, data.user);
       nav("/");
-    } catch {
-      setErr("Signup failed");
+    } catch (error) {
+      const message = error?.response?.data?.message || "Signup failed";
+      setErr(message);
     } finally { setLoading(false); }
   };
 
@@ -40,10 +42,18 @@ export default function Signup() {
           <TextField
             fullWidth
             size="small"
-            label="name"
+            label="Business name"
             sx={{ marginBottom: 2 }}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+          />
+          <TextField
+            fullWidth
+            size="small"
+            label="Contact number"
+            sx={{ marginBottom: 2 }}
+            value={contactNumber}
+            onChange={(e) => setContactNumber(e.target.value)}
           />
           <TextField
             fullWidth

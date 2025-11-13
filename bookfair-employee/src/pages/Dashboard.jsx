@@ -1,10 +1,9 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { Paper, Typography, Button, Snackbar, Alert, Divider, Stack } from "@mui/material";
+import { Paper, Typography, Divider } from "@mui/material";
 import StallMap from "../components/StallMap";
 import StallLegend from "../components/StallLegend";
 import { fetchStalls } from "../api/stalls";
-import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
   const [stalls, setStalls] = useState([]);
@@ -12,7 +11,6 @@ export default function Dashboard() {
   const [selectedIds, setSelectedIds] = useState(new Set());
   // const [warn, setWarn] = useState("");
   // const [info, setInfo] = useState("");
-  const { user } = useAuth();
 
   useEffect(()=> {
     (async ()=>{
@@ -62,10 +60,10 @@ export default function Dashboard() {
       <Paper className="p-4">
         <Typography variant="subtitle1" className="font-semibold mb-2">Reserved Stalls (quick view)</Typography>
         <div className="flex flex-wrap gap-2">
-          {stalls.filter(s=>s.status==="BOOKED" && s.reservedBy===user?.email).map(s=>(
+          {stalls.filter(s=>s.status==="BOOKED").map(s=>(
             <span key={s.id} className="badge bg-red-500 text-white">{s.code}</span>
           ))}
-          {stalls.filter(s=>s.status==="BOOKED" && s.reservedBy===user?.email).length === 0 && (
+          {stalls.filter(s=>s.status==="BOOKED").length === 0 && (
             <Typography variant="body2" color="text.secondary">No stalls reserved yet.</Typography>
           )}
         </div>
