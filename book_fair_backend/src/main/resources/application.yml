@@ -45,9 +45,10 @@ security:
     secret: c2VjdXJlLXNlY3JldC1rZXktcGxlYXNlLXJlcGxhY2Utd2l0aC1vd24=
     access-expiration-minutes: 30
     refresh-expiration-days: 14
-    cookie-domain: ""
-    cookie-secure: false
-    cookie-same-site: Lax
+    cookie-domain: "https://bookfair-reservation-system.onrender.com"
+    cookie-secure: true
+    cookie-same-site: None
+
 
 server:
   port: 8088
